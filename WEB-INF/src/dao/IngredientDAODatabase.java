@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import dto.Ingredient;
 
-public class IngredientDAODatabase  {
+public class IngredientDAODatabase {
 
     Connection con;
 
@@ -19,17 +19,17 @@ public class IngredientDAODatabase  {
     }
 
     public Ingredient findById(int id) {
-        try{
+        try {
             String query = "Select * from ingredients where id=?;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             Ingredient i = new Ingredient();
-            i.setPrix(0);
 
             if (rs.next()) {
                 i.setId(rs.getInt("id"));
                 i.setName(rs.getString("name"));
+                i.setPrix(rs.getInt("prix"));
             }
 
             return i;
@@ -41,14 +41,14 @@ public class IngredientDAODatabase  {
     }
 
     public ArrayList<Ingredient> findAll() {
-        try{
+        try {
             String query = "Select * from ingredients;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
             ArrayList<Ingredient> ingredients = new ArrayList<>();
             while (rs.next()) {
                 Ingredient i = new Ingredient();
-                i.setPrix(0);
+                i.setPrix(rs.getInt("prix"));
                 i.setId(rs.getInt("id"));
                 i.setName(rs.getString("name"));
                 ingredients.add(i);
@@ -60,15 +60,14 @@ public class IngredientDAODatabase  {
         }
         return null;
 
-        
     }
 
     public boolean save(Ingredient i) {
-        try{
-            String query = "INSERT INTO ingredients VALUES (?, ?)";
+        try {
+            String query = "INSERT INTO ingredients (name,prix) VALUES ( ?, ?)";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            ps.setInt(1, i.getId());
-            ps.setString(2, i.getName());
+            ps.setString(1, i.getName());
+            ps.setInt(2, i.getPrix());
             ps.executeUpdate();
             return true;
         } catch (Exception e) {
@@ -76,7 +75,5 @@ public class IngredientDAODatabase  {
             return false;
         }
     }
-
-
 
 }
