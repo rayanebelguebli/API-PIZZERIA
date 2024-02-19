@@ -9,5 +9,5 @@ public interface DAOIngredient {
 
     public Ingredient findById(int id);
 
-    public boolean save(int id, String nom, int prix);
+    public boolean save(Ingredient i);
 }

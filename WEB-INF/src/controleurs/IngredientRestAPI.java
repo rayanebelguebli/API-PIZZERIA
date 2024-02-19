@@ -1,30 +1,37 @@
 package controleurs;
 
-import java.io.BufferedReader;
-import java.io.PrintWriter;
+import java.io.*;
+import java.sql.Connection;
 import java.util.Collection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dao.IngredientDAODatabase;
+import dao.IngredientDAOList;
+import ds.DS;
 import dto.Ingredient;
-import io.jsonwebtoken.io.IOException;
-import jakarta.servlet.ServletException;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 
 @WebServlet("/ingredients/*")
-public class IngredientRestAPI extends HttpServlet {
-    IngredientDAODatabase dao = new IngredientDAODatabase();
-
+public class IngredientRestAPI extends HttpServlet{
+    IngredientDAOList list = new IngredientDAOList();
     public void doGet(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException, java.io.IOException {
+        throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
         ObjectMapper objectMapper = new ObjectMapper();
         String info = req.getPathInfo();
+        DS ds = new DS("/config.postgres.prop");
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } catch (Exception e) {
+            out.print(e.getMessage());
+
+        }
+        IngredientDAODatabase dao = new IngredientDAODatabase(con);
         if (info == null || info.equals("/")) {
             Collection<Ingredient> l = dao.findAll();
             String jsonstring = objectMapper.writeValueAsString(l);
@@ -34,38 +41,44 @@ public class IngredientRestAPI extends HttpServlet {
         String[] splits = info.split("/");
         if (splits.length != 2) {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
+        return;
         }
         int id = Integer.parseInt(splits[1]);
         Ingredient e = dao.findById(id);
-        if (e == null) {
+        if (e==null) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        out.print(objectMapper.writeValueAsString(e));
+        out.print (objectMapper.writeValueAsString(e));
         return;
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException, java.io.IOException {
+    throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
         ObjectMapper objectMapper = new ObjectMapper();
-        StringBuilder buffer = new StringBuilder();
-        BufferedReader reader = req.getReader();
         String info = req.getPathInfo();
-        if (info == null || info.equals("/")) {
-            String line = "";
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
-            Ingredient ingredient = objectMapper.readValue(buffer.toString(), Ingredient.class);
-            dao.save(ingredient.getId(), ingredient.getName(), ingredient.getPrix());
-            out.print(buffer.toString());
-            return;
+        DS ds = new DS("/config.postgres.prop");
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } catch (Exception e) {
+            out.print(e.getMessage());
         }
+        IngredientDAODatabase dao = new IngredientDAODatabase(con);
+        
 
-        return;
+        if (info == null || info.equals("/")){
+            StringBuilder buffer = new StringBuilder();
+		    BufferedReader reader = req.getReader();
+		    String line;
+		    while ((line = reader.readLine()) != null) {
+		        buffer.append(line);
+            }
+            String payload = buffer.toString();
+            Ingredient i = objectMapper.readValue(payload, Ingredient.class);
+            out.print(dao.save(i));
+        }
     }
-
 }

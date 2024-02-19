@@ -18,51 +18,23 @@ public class IngredientDAODatabase implements DAOIngredient {
         this.con = con;
     }
 
-    String url = "jdbc:postgresql://psqlserv/but2";
-    String nom = "julienbouinetu";
-    String mdp = "moi";
-
-    @Override
-    public ArrayList<Ingredient> findAll() {
-        String query = "SELECT * FROM ingredients;";
-        try (Connection con = DriverManager.getConnection(url, nom, mdp)) {
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            ArrayList<Ingredient> ingredients = new ArrayList<>();
-            while ((rs.next())) {
-                Ingredient ingredient = new Ingredient();
-                ingredient.setId(rs.getInt("id"));
-                ingredient.setName(rs.getString("name"));
-                ingredient.setPrix(rs.getInt("prix"));
-                ingredients.add(ingredient);
-            }
-            return ingredients;
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-
     @Override
     public Ingredient findById(int id) {
-        String query = "SELECT * FROM ingredients WHERE id = ? ;";
-        try (Connection con = DriverManager.getConnection(url, nom, mdp)) {
-            try (PreparedStatement ps = con.prepareStatement(query)) {
-                ps.setInt(1, id);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    Ingredient ingredient = new Ingredient();
-                    ingredient.setId(rs.getInt("id"));
-                    ingredient.setName(rs.getString("name"));
-                    ingredient.setPrix(rs.getInt("prix"));
-                    return ingredient;
-                }
-                return null;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+        try{
+            String query = "Select * from ingredients where id=?;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            Ingredient i = new Ingredient();
+            i.setPrix(0);
+
+            if (rs.next()) {
+                i.setId(rs.getInt("id"));
+                i.setName(rs.getString("name"));
             }
+
+            return i;
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -70,23 +42,43 @@ public class IngredientDAODatabase implements DAOIngredient {
     }
 
     @Override
-    public boolean save(int id, String name, int prix) {
-        String query = "Insert into ingredients (id, name, prix) VALUES ( ?, ? , ?) ; ";
-        try (Connection con = DriverManager.getConnection(url, nom, mdp)) {
-            try (PreparedStatement ps = con.prepareStatement(query)) {
-                ps.setInt(1, id);
-                ps.setString(2, name);
-                ps.setInt(3, prix);
-                ps.executeUpdate();
-                return true;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
+    public ArrayList<Ingredient> findAll() {
+        try{
+            String query = "Select * from ingredients;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ResultSet rs = ps.executeQuery();
+            ArrayList<Ingredient> ingredients = new ArrayList<>();
+            while (rs.next()) {
+                Ingredient i = new Ingredient();
+                i.setPrix(0);
+                i.setId(rs.getInt("id"));
+                i.setName(rs.getString("name"));
+                ingredients.add(i);
             }
+            return ingredients;
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            return null;
         }
-        return false;
+        
     }
+
+    @Override
+    public boolean save(Ingredient i) {
+        try{
+            String query = "INSERT INTO ingredients VALUES (?, ?)";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, i.getId());
+            ps.setString(2, i.getName());
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+
 
 }
