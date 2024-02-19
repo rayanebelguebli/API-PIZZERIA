@@ -3,11 +3,18 @@ package dto;
 import java.util.ArrayList;
 
 public class Pizza {
+    int id;
     String nom;
     String pâte;
     int prixBase;
     ArrayList<Ingredient> ingredients = new ArrayList<>();
     
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
     public String getNom() {
         return nom;
     }
