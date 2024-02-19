@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import dto.Ingredient;
 
-public class IngredientDAODatabase implements DAOIngredient {
+public class IngredientDAODatabase  {
 
     Connection con;
 
@@ -18,7 +18,6 @@ public class IngredientDAODatabase implements DAOIngredient {
         this.con = con;
     }
 
-    @Override
     public Ingredient findById(int id) {
         try{
             String query = "Select * from ingredients where id=?;";
@@ -41,7 +40,6 @@ public class IngredientDAODatabase implements DAOIngredient {
         return null;
     }
 
-    @Override
     public ArrayList<Ingredient> findAll() {
         try{
             String query = "Select * from ingredients;";
@@ -64,7 +62,6 @@ public class IngredientDAODatabase implements DAOIngredient {
         
     }
 
-    @Override
     public boolean save(Ingredient i) {
         try{
             String query = "INSERT INTO ingredients VALUES (?, ?)";

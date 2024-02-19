@@ -7,7 +7,6 @@ import java.util.Collection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dao.IngredientDAODatabase;
-import dao.IngredientDAOList;
 import ds.DS;
 import dto.Ingredient;
 import jakarta.servlet.*;
@@ -16,7 +15,6 @@ import jakarta.servlet.http.*;
 
 @WebServlet("/ingredients/*")
 public class IngredientRestAPI extends HttpServlet{
-    IngredientDAOList list = new IngredientDAOList();
     public void doGet(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
