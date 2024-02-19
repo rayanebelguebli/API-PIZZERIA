@@ -14,14 +14,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet("/ingredients/*")
-public class IngredientRestAPI extends HttpServlet{
+public class IngredientRestAPI extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
         ObjectMapper objectMapper = new ObjectMapper();
         String info = req.getPathInfo();
+        System.out.println("laal");
         DS ds = new DS("/config.postgres.prop");
+        System.out.println("laal");
         Connection con = null;
         try {
             con = ds.getConnection();
@@ -39,20 +41,20 @@ public class IngredientRestAPI extends HttpServlet{
         String[] splits = info.split("/");
         if (splits.length != 2) {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        return;
+            return;
         }
         int id = Integer.parseInt(splits[1]);
         Ingredient e = dao.findById(id);
-        if (e==null) {
+        if (e == null) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        out.print (objectMapper.writeValueAsString(e));
+        out.print(objectMapper.writeValueAsString(e));
         return;
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -65,14 +67,13 @@ public class IngredientRestAPI extends HttpServlet{
             out.print(e.getMessage());
         }
         IngredientDAODatabase dao = new IngredientDAODatabase(con);
-        
 
-        if (info == null || info.equals("/")){
+        if (info == null || info.equals("/")) {
             StringBuilder buffer = new StringBuilder();
-		    BufferedReader reader = req.getReader();
-		    String line;
-		    while ((line = reader.readLine()) != null) {
-		        buffer.append(line);
+            BufferedReader reader = req.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
             }
             String payload = buffer.toString();
             Ingredient i = objectMapper.readValue(payload, Ingredient.class);
