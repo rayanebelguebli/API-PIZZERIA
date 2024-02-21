@@ -37,4 +37,9 @@ public class Ingredient {
         return ingredient;
     }
 
+    @Override
+    public String toString() {
+        return "Ingredient [id=" + id + ", name=" + name + ", prix=" + prix + "]";
+    }
+
 }

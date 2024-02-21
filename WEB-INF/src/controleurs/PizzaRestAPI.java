@@ -53,35 +53,39 @@ public class PizzaRestAPI extends HttpServlet {
         return;
     }
 
+    public void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        res.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = res.getWriter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String info = req.getPathInfo();
+        DS ds = new DS("/config.postgres.prop");
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } catch (Exception e) {
+            out.print(e.getMessage());
+        }
+        PizzaDAODatabase dao = new PizzaDAODatabase(con);
+
+        if (info == null || info.equals("/")) {
+            StringBuilder buffer = new StringBuilder();
+            BufferedReader reader = req.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
+            }
+            String payload = buffer.toString();
+            System.out.println(payload);
+
+            Pizza p = objectMapper.readValue(payload, Pizza.class);
+            System.out.println(p.getIngredients().toString());
+            System.out.println(p.toString());
+            out.print(dao.save(p) + " " + dao.saveIngredients(p));
+        }
+    }
+
     /*
-     * public void doPost(HttpServletRequest req, HttpServletResponse res)
-     * throws ServletException, IOException {
-     * res.setContentType("application/json;charset=UTF-8");
-     * PrintWriter out = res.getWriter();
-     * ObjectMapper objectMapper = new ObjectMapper();
-     * String info = req.getPathInfo();
-     * DS ds = new DS("/config.postgres.prop");
-     * Connection con = null;
-     * try {
-     * con = ds.getConnection();
-     * } catch (Exception e) {
-     * out.print(e.getMessage());
-     * }
-     * PizzaDAODatabase dao = new PizzaDAODatabase(con);
-     * 
-     * if (info == null || info.equals("/")) {
-     * StringBuilder buffer = new StringBuilder();
-     * BufferedReader reader = req.getReader();
-     * String line;
-     * while ((line = reader.readLine()) != null) {
-     * buffer.append(line);
-     * }
-     * String payload = buffer.toString();
-     * Ingredient i = objectMapper.readValue(payload, Ingredient.class);
-     * out.print(dao.save(i));
-     * }
-     * }
-     * 
      * public void doDelete(HttpServletRequest req, HttpServletResponse res)
      * throws ServletException, IOException {
      * res.setContentType("application/json;charset=UTF-8");
