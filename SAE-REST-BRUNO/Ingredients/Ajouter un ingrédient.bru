@@ -1,0 +1,15 @@
+meta {
+  name: Ajouter un ingrédient
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/sae-rest_groupeh_belguebli_bouin/ingredients
+  body: json
+  auth: none
+}
+
+body:json {
+  {"name":"ça fonctionne", "prix":"15"}
+}
