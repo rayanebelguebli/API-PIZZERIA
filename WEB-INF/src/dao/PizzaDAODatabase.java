@@ -1,6 +1,5 @@
 package dao;
 
-import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -96,11 +95,12 @@ public class PizzaDAODatabase {
 
     public boolean save(Pizza p) {
         try {
-            String query = "INSERT INTO pizzas (name,pate,prixBase) VALUES ( ?, ?, ?) ;";
+            String query = "INSERT INTO pizzas (id, name,pate,prixBase) VALUES (?, ?, ?, ?) ;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, p.getName());
-            ps.setString(2, p.getpate());
-            ps.setInt(3, p.getPrixBase());
+            ps.setInt(1, p.getId());
+            ps.setString(2, p.getName());
+            ps.setString(3, p.getpate());
+            ps.setInt(4, p.getPrixBase());
             ps.executeUpdate();
             return true;
         } catch (Exception e) {
@@ -113,15 +113,8 @@ public class PizzaDAODatabase {
         try {
             String query = "INSERT INTO pizzasContient (idPizza,idIngredient) VALUES (?, ?) ;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            String query2 = "SELECT MAX(id) FROM pizzas;";
-            java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
-            ResultSet rs = ps2.executeQuery();
-            int idPizza = 0;
-            if (rs.next()) {
-                idPizza = rs.getInt("max");
-            }
             for (Ingredient i : p.getIngredients()) {
-                ps.setInt(1, idPizza);
+                ps.setInt(1, p.getId());
                 ps.setInt(2, i.getId());
                 ps.executeUpdate();
             }

@@ -6,7 +6,7 @@ Create table ingredients(
 
 
 Create table pizzas(
-    id serial primary key,
+    id int primary key,
     name text,
     pate text,
     prixBase text
