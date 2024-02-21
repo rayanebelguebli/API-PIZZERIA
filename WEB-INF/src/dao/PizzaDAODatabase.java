@@ -124,4 +124,23 @@ public class PizzaDAODatabase {
             return false;
         }
     }
+
+    public boolean delete(int id){
+        try{
+            String query = "DELETE FROM pizzas WHERE id=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            if(this.findById(id) != null){
+                ps.setInt(1, id);
+                ps.executeQuery();
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 }
