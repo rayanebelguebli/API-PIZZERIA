@@ -21,9 +21,7 @@ public class IngredientRestAPI extends HttpServlet {
         PrintWriter out = res.getWriter();
         ObjectMapper objectMapper = new ObjectMapper();
         String info = req.getPathInfo();
-        System.out.println("laal");
         DS ds = new DS("/config.postgres.prop");
-        System.out.println("laal");
         Connection con = null;
         try {
             con = ds.getConnection();
@@ -79,5 +77,36 @@ public class IngredientRestAPI extends HttpServlet {
             Ingredient i = objectMapper.readValue(payload, Ingredient.class);
             out.print(dao.save(i));
         }
+    }
+
+    public void doDelete(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        res.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = res.getWriter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String info = req.getPathInfo();
+        DS ds = new DS("/config.postgres.prop");
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } catch (Exception e) {
+            out.print(e.getMessage());
+        }
+        IngredientDAODatabase dao = new IngredientDAODatabase(con);
+
+        String[] splits = info.split("/");
+        if (splits.length != 2) {
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        int id = Integer.parseInt(splits[1]);
+        Ingredient e = dao.findById(id);
+        if (e == null) {
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        out.print(dao.delete(id));
+        out.print(objectMapper.writeValueAsString(e));
+        return;
     }
 }

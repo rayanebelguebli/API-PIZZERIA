@@ -64,13 +64,35 @@ public class IngredientDAODatabase {
 
     public boolean save(Ingredient i) {
         try {
-            String query = "INSERT INTO ingredients (name,prix) VALUES ( ?, ?)";
+            String query = "INSERT INTO ingredients (name,prix) VALUES (?, ?)";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ArrayList<Ingredient> test = this.findAll();
+            int idx = 0;
+            while (idx < test.size()) {
+                    if(test.get(idx).getName().toLowerCase().equals(i.getName().toLowerCase())){
+                        return false;
+                    }
+                    idx = idx +1;
+            }
             ps.setString(1, i.getName());
             ps.setInt(2, i.getPrix());
             ps.executeUpdate();
             return true;
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean delete(int id){
+        try{
+            String query = "DELETE FROM ingredients WHERE id=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, id);
+            ps.executeQuery();
+            return true;
+        }
+        catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
         }
