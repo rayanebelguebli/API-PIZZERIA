@@ -88,9 +88,14 @@ public class IngredientDAODatabase {
         try{
             String query = "DELETE FROM ingredients WHERE id=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            ps.setInt(1, id);
-            ps.executeQuery();
-            return true;
+            if(this.findById(id) != null){
+                ps.setInt(1, id);
+                ps.executeQuery();
+                return true;
+            }
+            else{
+                return false;
+            }
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
