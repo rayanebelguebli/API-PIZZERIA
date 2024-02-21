@@ -37,7 +37,7 @@ public class IngredientRestAPI extends HttpServlet {
             return;
         }
         String[] splits = info.split("/");
-        if (splits.length != 2) {
+        if (splits.length > 3) {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -46,6 +46,12 @@ public class IngredientRestAPI extends HttpServlet {
         if (e == null) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
+        }
+        if(splits.length  == 3){
+            if(splits[2].equals("name")){
+                out.print(objectMapper.writeValueAsString(e.getName()));
+                return;
+            }
         }
         out.print(objectMapper.writeValueAsString(e));
         return;
