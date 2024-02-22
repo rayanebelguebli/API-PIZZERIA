@@ -1,0 +1,28 @@
+meta {
+  name: Ajouter une pizza avec ses ingrédients
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/sae-rest_groupeh_belguebli_bouin/pizzas
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id":5,
+    "name": "on est trop fort",
+    "pate": "on est la",
+    "prixBase": 4555,
+    "ingredients": [
+      { "id": 9, 
+       "name": "tomate", 
+       "prix": 2 },
+      { "id": 10, 
+       "name": "froamge", 
+       "prix": 5 }
+    ]
+  }
+}

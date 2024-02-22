@@ -80,9 +80,7 @@ public class IngredientRestAPI extends HttpServlet {
                 buffer.append(line);
             }
             String payload = buffer.toString();
-            System.out.println(payload);
             Ingredient i = objectMapper.readValue(payload, Ingredient.class);
-            System.out.println(i.toString());
             out.print(dao.save(i));
         }
     }
@@ -105,16 +103,12 @@ public class IngredientRestAPI extends HttpServlet {
         String[] splits = info.split("/");
         if (splits.length != 2) {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
         }
         int id = Integer.parseInt(splits[1]);
         Ingredient e = dao.findById(id);
         if (e == null) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
         }
         out.print(dao.delete(id));
-        out.print(objectMapper.writeValueAsString(e));
-        return;
     }
 }

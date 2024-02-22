@@ -36,8 +36,8 @@ public class IngredientDAODatabase {
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            return null;
         }
-        return null;
     }
 
     public ArrayList<Ingredient> findAll() {
@@ -91,11 +91,8 @@ public class IngredientDAODatabase {
             if(this.findById(id) != null){
                 ps.setInt(1, id);
                 ps.executeQuery();
-                return true;
             }
-            else{
-                return false;
-            }
+            return true;
         }
         catch (Exception e) {
             System.out.println(e.getMessage());

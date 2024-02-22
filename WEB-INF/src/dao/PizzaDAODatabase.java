@@ -93,6 +93,24 @@ public class PizzaDAODatabase {
         return null;
     }
 
+    public boolean ingredientExist(Ingredient i){
+        try {
+            String query = "Select * from ingredients where id=?;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, i.getId());
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return true;
+            }
+            return false;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
     public boolean save(Pizza p) {
         try {
             String query = "INSERT INTO pizzas (id, name,pate,prixBase) VALUES (?, ?, ?, ?) ;";
@@ -110,6 +128,7 @@ public class PizzaDAODatabase {
     }
 
     public boolean saveIngredients(Pizza p) {
+        boolean res = false;
         try {
             String query = "INSERT INTO pizzasContient (idPizza,idIngredient) VALUES (?, ?) ;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
@@ -118,29 +137,51 @@ public class PizzaDAODatabase {
                 ps.setInt(2, i.getId());
                 ps.executeUpdate();
             }
-            return true;
+            res = true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return false;
+            res = false;
         }
+        return res;
     }
 
     public boolean delete(int id){
+        boolean res = false;
         try{
             String query = "DELETE FROM pizzas WHERE id=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
+            String query2 = "DELETE FROM pizzasContient WHERE idPizza=?";
+            java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
             if(this.findById(id) != null){
                 ps.setInt(1, id);
+                ps2.setInt(1, id);
                 ps.executeQuery();
-                return true;
-            }
-            else{
-                return false;
+                ps2.executeQuery();
+                res = true;
             }
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
-            return false;
+            res = false;
         }
+        return res;
+    }
+
+    public boolean deleteIngredient(int id){
+        boolean res = false;
+        try{
+            String query = "DELETE FROM pizzasContient WHERE idIngredient=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            if(this.findById(id) != null){
+                ps.setInt(1, id);
+                ps.executeQuery();
+                res = true;
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            res = false;
+        }
+        return res;
     }
 }
