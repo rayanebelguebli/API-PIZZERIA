@@ -2,8 +2,6 @@ package dto;
 
 import java.util.ArrayList;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class Pizza {
     int id;
     String name;

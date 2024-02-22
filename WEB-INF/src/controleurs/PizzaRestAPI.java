@@ -96,23 +96,27 @@ public class PizzaRestAPI extends HttpServlet {
                 out.print("ingredient(s) enexistant");
             }
         }
-        String[] splits = info.split("/");
-        if(splits.length == 3){
-            int idPizza = Integer.parseInt(splits[1]);
-            Pizza p = dao.findById(idPizza);
-            Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
-            if(i.getName() != null && p.getName() != null){
-                p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
-                for(Ingredient ingredientActuelPizza : p.getIngredients()){
-                    dao.deleteIngredient(ingredientActuelPizza.getId());
+        else{
+            String[] splits = info.split("/");
+            if(splits.length == 3){
+                int idPizza = Integer.parseInt(splits[1]);
+                Pizza p = dao.findById(idPizza);
+                Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
+                if(i.getName() != null && p.getName() != null){
+                    p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
+                    for(Ingredient ingredientActuelPizza : p.getIngredients()){
+                        dao.deleteIngredient(ingredientActuelPizza.getId());
+                        System.out.println(daoIngredient.findById(ingredientActuelPizza.getId()));
+                    }
+                    dao.saveIngredients(p);
+                    out.print(objectMapper.writeValueAsString(p));
                 }
-                dao.saveIngredients(p);
-                out.print(objectMapper.writeValueAsString(p));
-            }
-            else{
-                out.print("pizza ou ingredient enexistant");
+                else{
+                    out.print("pizza ou ingredient enexistant");
+                }
             }
         }
+        
     }
 
     public void doDelete(HttpServletRequest req, HttpServletResponse res)

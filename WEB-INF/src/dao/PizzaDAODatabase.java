@@ -149,7 +149,7 @@ public class PizzaDAODatabase {
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             String query2 = "DELETE FROM pizzasContient WHERE idPizza=?";
             java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
-            if(this.findById(id).getName() != null){
+            if(this.findById(id) != null){
                 ps.setInt(1, id);
                 ps2.setInt(1, id);
                 ps.executeUpdate();
@@ -168,7 +168,7 @@ public class PizzaDAODatabase {
         try{
             String query = "DELETE FROM pizzasContient WHERE idIngredient=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            if(this.findById(id).getName() != null){
+            if(this.findById(id) != null){
                 ps.setInt(1, id);
                 ps.executeUpdate();
                 return true;
