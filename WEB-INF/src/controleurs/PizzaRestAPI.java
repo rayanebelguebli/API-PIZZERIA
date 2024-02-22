@@ -67,6 +67,7 @@ public class PizzaRestAPI extends HttpServlet {
             out.print(e.getMessage());
         }
         PizzaDAODatabase dao = new PizzaDAODatabase(con);
+        IngredientDAODatabase daoIngredient = new IngredientDAODatabase(con);
         if (info == null || info.equals("/")) {
             StringBuilder buffer = new StringBuilder();
             BufferedReader reader = req.getReader();
@@ -87,10 +88,29 @@ public class PizzaRestAPI extends HttpServlet {
                 }
             }
             if(exist){
-                out.print(dao.save(p) + " " + dao.saveIngredients(p));
+                if(dao.save(p) == true && dao.saveIngredients(p) == true){
+                    out.print(objectMapper.writeValueAsString(p));
+                }
             }
             else{
                 out.print("ingredient(s) enexistant");
+            }
+        }
+        String[] splits = info.split("/");
+        if(splits.length == 3){
+            int idPizza = Integer.parseInt(splits[1]);
+            Pizza p = dao.findById(idPizza);
+            Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
+            if(i.getName() != null && p.getName() != null){
+                p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
+                for(Ingredient ingredientActuelPizza : p.getIngredients()){
+                    dao.deleteIngredient(ingredientActuelPizza.getId());
+                }
+                dao.saveIngredients(p);
+                out.print(objectMapper.writeValueAsString(p));
+            }
+            else{
+                out.print("pizza ou ingredient enexistant");
             }
         }
     }
@@ -99,6 +119,7 @@ public class PizzaRestAPI extends HttpServlet {
             throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
+        ObjectMapper objectMapper = new ObjectMapper();
         String info = req.getPathInfo();
         DS ds = new DS("/config.postgres.prop");
         Connection con = null;
@@ -122,13 +143,14 @@ public class PizzaRestAPI extends HttpServlet {
             int idIngredient = Integer.parseInt(splits[2]);
             for(Ingredient i : p.getIngredients()){
                 if(i.getId() == idIngredient){
-                    out.print(dao.deleteIngredient(i.getId()) + "");
+                    dao.deleteIngredient(i.getId());
                 }
             }
-            
+            out.print(objectMapper.writeValueAsString(p));
         }
         if(splits.length == 2){
-            out.print(dao.delete(id) +"");
+            dao.delete(id); 
+            out.print(objectMapper.writeValueAsString(p));
         }
     }
 }

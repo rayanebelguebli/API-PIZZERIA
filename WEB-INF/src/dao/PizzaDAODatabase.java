@@ -128,7 +128,6 @@ public class PizzaDAODatabase {
     }
 
     public boolean saveIngredients(Pizza p) {
-        boolean res = false;
         try {
             String query = "INSERT INTO pizzasContient (idPizza,idIngredient) VALUES (?, ?) ;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
@@ -137,51 +136,48 @@ public class PizzaDAODatabase {
                 ps.setInt(2, i.getId());
                 ps.executeUpdate();
             }
-            res = true;
+            return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            res = false;
+            return false;
         }
-        return res;
     }
 
     public boolean delete(int id){
-        boolean res = false;
         try{
             String query = "DELETE FROM pizzas WHERE id=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             String query2 = "DELETE FROM pizzasContient WHERE idPizza=?";
             java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
-            if(this.findById(id) != null){
+            if(this.findById(id).getName() != null){
                 ps.setInt(1, id);
                 ps2.setInt(1, id);
-                ps.executeQuery();
-                ps2.executeQuery();
-                res = true;
+                ps.executeUpdate();
+                ps2.executeUpdate();
+                return true;
             }
+            return false;
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
-            res = false;
+            return false;
         }
-        return res;
     }
 
     public boolean deleteIngredient(int id){
-        boolean res = false;
         try{
             String query = "DELETE FROM pizzasContient WHERE idIngredient=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            if(this.findById(id) != null){
+            if(this.findById(id).getName() != null){
                 ps.setInt(1, id);
-                ps.executeQuery();
-                res = true;
+                ps.executeUpdate();
+                return true;
             }
+            return false;
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
-            res = false;
+            return false;
         }
-        return res;
     }
 }

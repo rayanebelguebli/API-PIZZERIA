@@ -81,7 +81,8 @@ public class IngredientRestAPI extends HttpServlet {
             }
             String payload = buffer.toString();
             Ingredient i = objectMapper.readValue(payload, Ingredient.class);
-            out.print(dao.save(i));
+            dao.save(i);
+            out.print(objectMapper.writeValueAsString(i));
         }
     }
 
@@ -109,6 +110,7 @@ public class IngredientRestAPI extends HttpServlet {
         if (e == null) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-        out.print(dao.delete(id));
+        dao.delete(id);
+        out.print(objectMapper.writeValueAsString(e));
     }
 }
