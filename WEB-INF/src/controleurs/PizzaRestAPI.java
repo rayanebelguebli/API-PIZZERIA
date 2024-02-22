@@ -186,10 +186,15 @@ public class PizzaRestAPI extends DoPatch {
             buffer.append(line);
         }
 
+        if (dao.findById(id).getId() == 0) {
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        System.out.println(dao.findById(id));
         String payload = buffer.toString();
 
         Map<String, String> jsonData = objectMapper.readValue(payload, Map.class);
-        // Obtenir la valeur du prix
+
         String prixString = jsonData.get("prix");
 
         int prix = Integer.parseInt(prixString);
