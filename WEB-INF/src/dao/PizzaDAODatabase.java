@@ -93,7 +93,7 @@ public class PizzaDAODatabase {
         return null;
     }
 
-    public boolean ingredientExist(Ingredient i){
+    public boolean ingredientExist(Ingredient i) {
         try {
             String query = "Select * from ingredients where id=?;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
@@ -143,13 +143,13 @@ public class PizzaDAODatabase {
         }
     }
 
-    public boolean delete(int id){
-        try{
+    public boolean delete(int id) {
+        try {
             String query = "DELETE FROM pizzas WHERE id=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             String query2 = "DELETE FROM pizzasContient WHERE idPizza=?";
             java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
-            if(this.findById(id).getName() != null){
+            if (this.findById(id).getName() != null) {
                 ps.setInt(1, id);
                 ps2.setInt(1, id);
                 ps.executeUpdate();
@@ -157,26 +157,39 @@ public class PizzaDAODatabase {
                 return true;
             }
             return false;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
         }
     }
 
-    public boolean deleteIngredient(int id){
-        try{
+    public boolean deleteIngredient(int id) {
+        try {
             String query = "DELETE FROM pizzasContient WHERE idIngredient=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            if(this.findById(id).getName() != null){
+            if (this.findById(id).getName() != null) {
                 ps.setInt(1, id);
                 ps.executeUpdate();
                 return true;
             }
             return false;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean modifPizza(int prix, int id) {
+        try {
+            String query = "UPDATE pizzas set prixBase= ? where id = ?;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, prix);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
