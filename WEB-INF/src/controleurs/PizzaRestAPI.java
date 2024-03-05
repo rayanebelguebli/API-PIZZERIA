@@ -87,12 +87,12 @@ public class PizzaRestAPI extends DoPatch {
                     idx = idx + 1;
                 }
             }
-            if (exist) {
+            if (exist && dao.findById(p.getId()).getName() == null) {
                 if (dao.save(p) == true && dao.saveIngredients(p) == true) {
                     out.print(objectMapper.writeValueAsString(p));
                 }
             } else {
-                out.print("ingredient(s) enexistant");
+                out.print("ingredient(s) inexistant ou pizza déjà existante");
             }
         }
         String[] splits = info.split("/");
@@ -103,13 +103,19 @@ public class PizzaRestAPI extends DoPatch {
             if(i.getName() != null && p.getName() != null){
                 p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
                 for(Ingredient ingredientActuelPizza : p.getIngredients()){
-                    dao.deleteIngredient(ingredientActuelPizza.getId());
+                    System.out.println(dao.deleteIngredient(ingredientActuelPizza.getId()));
                 }
-                dao.saveIngredients(p);
-                out.print(objectMapper.writeValueAsString(p));
+                if(dao.saveIngredients(p)){
+                    out.print(objectMapper.writeValueAsString(p));
+                }
+                else{
+                    out.print("ingredient déjà existant");
+
+                }
+                
             }
             else{
-                out.print("pizza ou ingredient enexistant");
+                out.print("pizza ou ingredient inexistant");
             }
         }
     }
@@ -128,7 +134,6 @@ public class PizzaRestAPI extends DoPatch {
             out.print(e.getMessage());
         }
         PizzaDAODatabase dao = new PizzaDAODatabase(con);
-
         String[] splits = info.split("/");
         if (splits.length > 3) {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -140,17 +145,32 @@ public class PizzaRestAPI extends DoPatch {
         }
         if (splits.length == 3) {
             int idIngredient = Integer.parseInt(splits[2]);
-            for (Ingredient i : p.getIngredients()) {
-                if (i.getId() == idIngredient) {
-                    dao.deleteIngredient(i.getId());
+            boolean delete = false;
+            int idx = 0;
+            while (!delete && idx < p.getIngredients().size()) {
+                if (p.getIngredients().get(idx).getId() == idIngredient) {
+                    dao.deleteIngredient(idIngredient);
+                    out.print("ingredient supprimer : " + objectMapper.writeValueAsString(p.getIngredients().get(idx).getName())); 
+                    delete = true;
+                }
+                else{
+                    idx = idx + 1;
                 }
             }
-            out.print(objectMapper.writeValueAsString(p));
+            if(!delete){
+                out.print("ingredient non associé à cette pizza");
+            }
         }
         if (splits.length == 2) {
-            dao.delete(id);
+            if(dao.findById(id).getName() != null){
+                dao.delete(id);
             out.print(objectMapper.writeValueAsString(p));
+            }
+            else{
+                out.print("pizza non existante");
+            }
         }
+        
     }
 
     @Override

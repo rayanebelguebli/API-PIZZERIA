@@ -167,7 +167,7 @@ public class PizzaDAODatabase {
         try {
             String query = "DELETE FROM pizzasContient WHERE idIngredient=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            if(this.findById(id).getName() != null){
+            if(this.findById(id) != null){
                 ps.setInt(1, id);
                 ps.executeUpdate();
                 return true;
