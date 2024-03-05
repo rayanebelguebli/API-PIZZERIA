@@ -3,6 +3,7 @@ package controleurs;
 import java.io.*;
 import java.sql.Connection;
 import java.util.Collection;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -16,7 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet("/pizzas/*")
-public class PizzaRestAPI extends HttpServlet {
+public class PizzaRestAPI extends DoPatch {
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
@@ -80,43 +81,37 @@ public class PizzaRestAPI extends HttpServlet {
             boolean exist = true;
             int idx = 0;
             while (exist && idx < p.getIngredients().size()) {
-                if(!dao.ingredientExist(p.getIngredients().get(idx))){
+                if (!dao.ingredientExist(p.getIngredients().get(idx))) {
                     exist = false;
-                }
-                else{
+                } else {
                     idx = idx + 1;
                 }
             }
-            if(exist){
-                if(dao.save(p) == true && dao.saveIngredients(p) == true){
+            if (exist) {
+                if (dao.save(p) == true && dao.saveIngredients(p) == true) {
                     out.print(objectMapper.writeValueAsString(p));
                 }
-            }
-            else{
+            } else {
                 out.print("ingredient(s) enexistant");
             }
         }
-        else{
-            String[] splits = info.split("/");
-            if(splits.length == 3){
-                int idPizza = Integer.parseInt(splits[1]);
-                Pizza p = dao.findById(idPizza);
-                Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
-                if(i.getName() != null && p.getName() != null){
-                    p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
-                    for(Ingredient ingredientActuelPizza : p.getIngredients()){
-                        dao.deleteIngredient(ingredientActuelPizza.getId());
-                        System.out.println(daoIngredient.findById(ingredientActuelPizza.getId()));
-                    }
-                    dao.saveIngredients(p);
-                    out.print(objectMapper.writeValueAsString(p));
+        String[] splits = info.split("/");
+        if(splits.length == 3){
+            int idPizza = Integer.parseInt(splits[1]);
+            Pizza p = dao.findById(idPizza);
+            Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
+            if(i.getName() != null && p.getName() != null){
+                p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
+                for(Ingredient ingredientActuelPizza : p.getIngredients()){
+                    dao.deleteIngredient(ingredientActuelPizza.getId());
                 }
-                else{
-                    out.print("pizza ou ingredient enexistant");
-                }
+                dao.saveIngredients(p);
+                out.print(objectMapper.writeValueAsString(p));
+            }
+            else{
+                out.print("pizza ou ingredient enexistant");
             }
         }
-        
     }
 
     public void doDelete(HttpServletRequest req, HttpServletResponse res)
@@ -143,18 +138,70 @@ public class PizzaRestAPI extends HttpServlet {
         if (p == null) {
             res.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-        if(splits.length  == 3){
+        if (splits.length == 3) {
             int idIngredient = Integer.parseInt(splits[2]);
-            for(Ingredient i : p.getIngredients()){
-                if(i.getId() == idIngredient){
+            for (Ingredient i : p.getIngredients()) {
+                if (i.getId() == idIngredient) {
                     dao.deleteIngredient(i.getId());
                 }
             }
             out.print(objectMapper.writeValueAsString(p));
         }
-        if(splits.length == 2){
-            dao.delete(id); 
+        if (splits.length == 2) {
+            dao.delete(id);
             out.print(objectMapper.writeValueAsString(p));
         }
+    }
+
+    @Override
+    public void doPatch(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        res.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = res.getWriter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String info = req.getPathInfo();
+        DS ds = new DS("/config.postgres.prop");
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } catch (Exception e) {
+            out.print(e.getMessage());
+        }
+
+        PizzaDAODatabase dao = new PizzaDAODatabase(con);
+        if (info == null || info.equals("/")) {
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        String[] splits = info.split("/");
+        if (splits.length != 2) {
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        int id = Integer.parseInt(splits[1]);
+
+        StringBuilder buffer = new StringBuilder();
+        BufferedReader reader = req.getReader();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line);
+        }
+
+        if (dao.findById(id).getId() == 0) {
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        System.out.println(dao.findById(id));
+        String payload = buffer.toString();
+
+        Map<String, String> jsonData = objectMapper.readValue(payload, Map.class);
+
+        String prixString = jsonData.get("prix");
+
+        int prix = Integer.parseInt(prixString);
+
+        System.out.println(dao.modifPizza(prix, id));
+
+        out.print(objectMapper.writeValueAsString(dao.findById(id)));
     }
 }
