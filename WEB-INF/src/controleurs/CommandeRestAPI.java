@@ -7,16 +7,18 @@ import java.util.Collection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dao.CommandeDAODatabase;
+import dao.IngredientDAODatabase;
 import dao.PizzaDAODatabase;
 import ds.DS;
 import dto.Commande;
+import dto.Ingredient;
 import dto.Pizza;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet("/commandes/*")
-public class CommandeRestAPI extends HttpServlet{
+public class CommandeRestAPI extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
@@ -52,4 +54,58 @@ public class CommandeRestAPI extends HttpServlet{
         out.print(objectMapper.writeValueAsString(e));
         return;
     }
+
+    public void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        res.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = res.getWriter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String info = req.getPathInfo();
+        DS ds = new DS("/config.postgres.prop");
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } catch (Exception e) {
+            out.print(e.getMessage());
+        }
+
+        CommandeDAODatabase dao = new CommandeDAODatabase(con);
+        // PizzaDAODatabase daoPizza = new PizzaDAODatabase(con);
+
+        if (info == null || info.equals("/")) {
+            StringBuilder buffer = new StringBuilder();
+            BufferedReader reader = req.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
+            }
+            String payload = buffer.toString();
+            Commande c = objectMapper.readValue(payload, Commande.class);
+            boolean exist = true;
+            int idx = 0;
+            /*
+             * while (exist && idx < c.getList().size()) {
+             * for (int i = 0; i < c.getList().get(idx).getIngredients().size(); i++) {
+             * if (!dao.ingredientExistInPizzaContient(c.getList().get(idx),
+             * c.getList().get(idx).getIngredients().get(i))) {
+             * exist = false;
+             * } else {
+             * idx = idx + 1;
+             * }
+             * }
+             * 
+             * }
+             */
+            // if (exist) {
+            if (dao.save(c) == true && dao.savePizzas(c) == true) {
+                out.print(objectMapper.writeValueAsString(dao.findById(c.getId())));
+            }
+
+            System.out.println("lalala");
+            // } else {
+            // out.print("ingredient(s) enexistant");
+            // }
+        }
+    }
+
 }

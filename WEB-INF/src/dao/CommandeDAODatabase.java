@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
@@ -9,7 +10,7 @@ import dto.Ingredient;
 import dto.Pizza;
 
 public class CommandeDAODatabase {
-    
+
     Connection con;
 
     public CommandeDAODatabase(Connection con) {
@@ -90,5 +91,55 @@ public class CommandeDAODatabase {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean save(Commande p) {
+        try {
+            String query = "INSERT INTO commandes (id, name,date) VALUES (?, ?, ?) ;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, p.getId());
+            ps.setString(2, p.getName());
+            java.util.Date utilDate = p.getDate();
+            java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+            ps.setDate(3, sqlDate);
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean savePizzas(Commande p) {
+        try {
+            String query = "INSERT INTO commandesContient (idCommande,idPizza) VALUES (?, ?) ;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            for (Pizza i : p.getList()) {
+                ps.setInt(1, p.getId());
+                ps.setInt(2, i.getId());
+                ps.executeUpdate();
+            }
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean ingredientExistInPizzaContient(Pizza p, Ingredient i) {
+        try {
+            String query = "Select * from pizzasContient where idPizza= ? and idIngredient = ? ;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, p.getId());
+            ps.setInt(2, i.getId());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 }
