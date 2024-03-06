@@ -1,0 +1,25 @@
+meta {
+  name: post
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/sae-rest_groupeh_belguebli_bouin/commandes/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "id": 10,
+      "name": "test2 ",
+      "date": 1703890800000,
+      "list": [
+        {
+          "id": 1
+        }
+      ]
+  }
+  
+}
