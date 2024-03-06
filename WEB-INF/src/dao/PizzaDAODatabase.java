@@ -193,4 +193,23 @@ public class PizzaDAODatabase {
             return false;
         }
     }
+
+    public boolean findByName(String name){
+        try{
+            String query = "Select * from pizzas where name=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

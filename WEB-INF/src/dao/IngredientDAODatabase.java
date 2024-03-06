@@ -100,4 +100,23 @@ public class IngredientDAODatabase {
         }
     }
 
+    public Ingredient findByName(String name){
+        try{
+            String query = "SELECT * FROM ingredients WHERE name = ?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            Ingredient i = new Ingredient();
+            if(rs.next()){
+                i.setId(rs.getInt("id"));
+                i.setName(rs.getString("name"));
+                i.setPrix(rs.getInt("prix"));
+            }
+            return i;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
 }

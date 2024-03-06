@@ -31,6 +31,10 @@ public class IngredientRestAPI extends HttpServlet {
                 return;
             }
             String[] splits = info.split("/");
+            if (splits.length > 3) {
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
             int id = Integer.parseInt(splits[1]);
             Ingredient e = dao.findById(id);
             if (e == null) {
@@ -43,7 +47,7 @@ public class IngredientRestAPI extends HttpServlet {
                         return;
                     }
                     else{
-                        out.print("ingrédient innexistant");
+                        out.print("ingrédient inexistant");
                         return;
                     }
 
@@ -55,7 +59,7 @@ public class IngredientRestAPI extends HttpServlet {
                         return;
                     }
                     else{
-                        out.print("ingrédient innexistant");
+                        out.print("ingrédient inexistant");
                         return;
                     }
                 }
@@ -98,10 +102,12 @@ public class IngredientRestAPI extends HttpServlet {
                 }
                 if(!exist){
                     dao.save(i);
-                    out.print(objectMapper.writeValueAsString(i));
+                    out.print(objectMapper.writeValueAsString(dao.findByName(i.getName())));
+                    return;
                 }
                 else{
                     out.print("ingrédient déjà existant");
+                    return;
                 }
             }
         } catch (Exception e) {
@@ -129,8 +135,15 @@ public class IngredientRestAPI extends HttpServlet {
             if (e == null) {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-            dao.delete(id);
-            out.print(objectMapper.writeValueAsString(e));
+            if(e.getName() != null){
+                dao.delete(id);
+                out.print(objectMapper.writeValueAsString(e));
+                return;
+            }
+            else{
+                out.print("Ingrédient inexistant");
+                return;
+            }
         } catch (Exception e) {
             out.print(e.getMessage());
         }
