@@ -37,6 +37,17 @@ public class IngredientRestAPI extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
+            if(splits.length  == 2){
+                    if(e.getName() != null){
+                        out.print(objectMapper.writeValueAsString(e));
+                        return;
+                    }
+                    else{
+                        out.print("ingrédient innexistant");
+                        return;
+                    }
+
+            }
             if(splits.length  == 3){
                 if(splits[2].equals("name")){
                     if(e.getName() != null){
@@ -49,8 +60,6 @@ public class IngredientRestAPI extends HttpServlet {
                     }
                 }
             }
-            out.print(objectMapper.writeValueAsString(e));
-            return;
         } catch (Exception e) {
             out.print(e.getMessage());
 
