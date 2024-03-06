@@ -43,11 +43,11 @@ public class IngredientRestAPI extends HttpServlet {
             }
             if(splits.length  == 2){
                     if(e.getName() != null){
-                        out.print(objectMapper.writeValueAsString(e));
+                        out.print(objectMapper.writeValueAsString(e.getName()));
                         return;
                     }
                     else{
-                        out.print("ingrédient inexistant");
+                        out.print("ingredient inexistant");
                         return;
                     }
 
@@ -59,7 +59,7 @@ public class IngredientRestAPI extends HttpServlet {
                         return;
                     }
                     else{
-                        out.print("ingrédient inexistant");
+                        out.print("ingredient inexistant");
                         return;
                     }
                 }
@@ -106,7 +106,7 @@ public class IngredientRestAPI extends HttpServlet {
                     return;
                 }
                 else{
-                    out.print("ingrédient déjà existant");
+                    out.print("ingredient déjà existant");
                     return;
                 }
             }
@@ -131,17 +131,18 @@ public class IngredientRestAPI extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST);
             }
             int id = Integer.parseInt(splits[1]);
-            Ingredient e = dao.findById(id);
-            if (e == null) {
+            Ingredient i = dao.findById(id);
+            if (i == null) {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-            if(e.getName() != null){
+            if(i.getName() != null){
                 dao.delete(id);
-                out.print(objectMapper.writeValueAsString(e));
+                out.print("ingredient supprimer : "); 
+                out.print(i.getName());
                 return;
             }
             else{
-                out.print("Ingrédient inexistant");
+                out.print("ingredient inexistant");
                 return;
             }
         } catch (Exception e) {

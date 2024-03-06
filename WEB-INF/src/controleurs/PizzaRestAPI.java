@@ -173,7 +173,7 @@ public class PizzaRestAPI extends DoPatch {
                 if (p.getIngredients().get(idx).getId() == idIngredient) {
                     dao.deleteIngredient(idIngredient);
                     out.print("ingredient supprimer : "); 
-                    out.print(objectMapper.writeValueAsString(p.getIngredients().get(idx).getName()));
+                    out.print(p.getIngredients().get(idx).getName());
                     delete = true;
                     return;
                 }
@@ -189,8 +189,9 @@ public class PizzaRestAPI extends DoPatch {
         if (splits.length == 2) {
             if(dao.findById(id).getName() != null){
                 dao.delete(id);
-            out.print("pizza supprimer : ");
-            out.print(objectMapper.writeValueAsString(p.getName()));
+                out.print("pizza supprimer : ");
+                out.print(p.getName());
+                return;
             }
             else{
                 out.print("pizza inexistant");
@@ -244,9 +245,11 @@ public class PizzaRestAPI extends DoPatch {
             System.out.println(dao.modifPizza(prix, id));
 
             out.print(objectMapper.writeValueAsString(dao.findById(id)));
+            return;
         }
         else{
             out.print("pizza inexistante");
+            return;
         }
         } catch (Exception e) {
             out.print(e.getMessage());
