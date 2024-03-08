@@ -69,10 +69,10 @@ public class IngredientDAODatabase {
             ArrayList<Ingredient> test = this.findAll();
             int idx = 0;
             while (idx < test.size()) {
-                    if(test.get(idx).getName().toLowerCase().equals(i.getName().toLowerCase())){
-                        return false;
-                    }
-                    idx = idx +1;
+                if (test.get(idx).getName().toLowerCase().equals(i.getName().toLowerCase())) {
+                    return false;
+                }
+                idx = idx + 1;
             }
             ps.setString(1, i.getName());
             ps.setInt(2, i.getPrix());
@@ -84,30 +84,29 @@ public class IngredientDAODatabase {
         }
     }
 
-    public boolean delete(int id){
-        try{
+    public boolean delete(int id) {
+        try {
             String query = "DELETE FROM ingredients WHERE id=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            if(this.findById(id).getName() != null){
+            if (this.findById(id).getName() != null) {
                 ps.setInt(1, id);
                 ps.executeUpdate();
             }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
         }
     }
 
-    public Ingredient findByName(String name){
-        try{
+    public Ingredient findByName(String name) {
+        try {
             String query = "SELECT * FROM ingredients WHERE name = ?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             ps.setString(1, name);
             ResultSet rs = ps.executeQuery();
             Ingredient i = new Ingredient();
-            if(rs.next()){
+            if (rs.next()) {
                 i.setId(rs.getInt("id"));
                 i.setName(rs.getString("name"));
                 i.setPrix(rs.getInt("prix"));
@@ -116,6 +115,21 @@ public class IngredientDAODatabase {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
+        }
+    }
+
+    public boolean modifIngredient(int prix, int id) {
+        try {
+            String query = "UPDATE ingredients set prix= ? where id = ?;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, prix);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 
