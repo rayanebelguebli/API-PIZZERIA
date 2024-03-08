@@ -1,0 +1,17 @@
+meta {
+  name: modifier le prix d'un ingrédient
+  type: http
+  seq: 2
+}
+
+patch {
+  url: http://localhost:8080/sae-rest_groupeh_belguebli_bouin/ingredients/14
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "prix":"3"
+  }
+}
