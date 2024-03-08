@@ -142,4 +142,41 @@ public class CommandeDAODatabase {
             return false;
         }
     }
+
+    public boolean findByName(String name){
+        try{
+            String query = "Select * from commandes where name=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean PizzaExist(Pizza p) {
+        try {
+            String query = "Select * from pizzas where id=?;";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, p.getId());
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return true;
+            }
+            return false;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 }

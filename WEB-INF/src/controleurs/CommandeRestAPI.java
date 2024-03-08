@@ -35,18 +35,45 @@ public class CommandeRestAPI extends HttpServlet {
                 return;
             }
             String[] splits = info.split("/");
-            if (splits.length != 2) {
+            if (splits.length > 3) {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
             int id = Integer.parseInt(splits[1]);
-            Commande e = dao.findById(id);
-            if (e == null) {
+            Commande c = dao.findById(id);
+            if (c == null) {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            out.print(objectMapper.writeValueAsString(e));
-            return;
+            if(splits.length  == 2){
+                if(c.getName() != null){
+                    out.print(objectMapper.writeValueAsString(c));
+                    return;
+                }
+                else{
+                    out.print("commande inexistant");
+                    return;
+                }
+            }
+            if(splits.length  == 3){
+                if(splits[2].equals("prixfinal")){
+                    if(dao.findById(c.getId()).getName() != null){
+                        int prixFinal = 0;
+                        for(Pizza p : c.getList()){
+                            prixFinal = prixFinal + p.getPrixBase();
+                            for(Ingredient i : p.getIngredients()){
+                                prixFinal = prixFinal + i.getPrix();
+                            }
+                        }
+                    
+                    out.print(objectMapper.writeValueAsString(c.getName() + " : " + prixFinal + " euros"));
+                    return;
+                    }
+                    else{
+                        out.print("commande inexistante");
+                    }
+                }
+            }
         } catch (Exception e) {
             out.print(e.getMessage());
 
@@ -75,28 +102,22 @@ public class CommandeRestAPI extends HttpServlet {
                 Commande c = objectMapper.readValue(payload, Commande.class);
                 boolean exist = true;
                 int idx = 0;
-                /*
-                * while (exist && idx < c.getList().size()) {
-                * for (int i = 0; i < c.getList().get(idx).getIngredients().size(); i++) {
-                * if (!dao.ingredientExistInPizzaContient(c.getList().get(idx),
-                * c.getList().get(idx).getIngredients().get(i))) {
-                * exist = false;
-                * } else {
-                * idx = idx + 1;
-                * }
-                * }
-                * 
-                * }
-                */
-                // if (exist) {
-                if (dao.save(c) == true && dao.savePizzas(c) == true) {
-                    out.print(objectMapper.writeValueAsString(dao.findById(c.getId())));
+                while (exist && idx < c.getList().size()) {
+                    if (!dao.PizzaExist(c.getList().get(idx))) {
+                        exist = false;
+                    } else {
+                        idx = idx + 1;
+                    }
                 }
-
-                System.out.println("lalala");
-                // } else {
-                // out.print("ingredient(s) enexistant");
-                // }
+                if (exist && dao.findById(c.getId()).getName() == null && !dao.findByName(c.getName())) {
+                    if (dao.save(c) == true && dao.savePizzas(c) == true) {
+                        out.print(objectMapper.writeValueAsString(dao.findById(c.getId())));
+                        return;
+                    }
+                } else {
+                    out.print("pizzas(s) inexistant ou commande déjà existante");
+                    return;
+                }
             }
         } catch (Exception e) {
             out.print(e.getMessage());
