@@ -43,17 +43,6 @@ public class IngredientRestAPI extends DoPatch {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-<<<<<<< HEAD
-            if(splits.length  == 2){
-                    if(e.getName() != null){
-                        out.print(objectMapper.writeValueAsString(e.getName()));
-                        return;
-                    }
-                    else{
-                        out.print("ingredient inexistant");
-                        return;
-                    }
-=======
             if (splits.length == 2) {
                 if (e.getName() != null) {
                     out.print(objectMapper.writeValueAsString(e));
@@ -62,7 +51,6 @@ public class IngredientRestAPI extends DoPatch {
                     out.print("ingrédient inexistant");
                     return;
                 }
->>>>>>> 194a99d8c64b0183d3b83c3910f96cfb4b3aa0c9
 
             }
             if (splits.length == 3) {
@@ -70,14 +58,8 @@ public class IngredientRestAPI extends DoPatch {
                     if (e.getName() != null) {
                         out.print(objectMapper.writeValueAsString(e.getName()));
                         return;
-<<<<<<< HEAD
-                    }
-                    else{
-                        out.print("ingredient inexistant");
-=======
                     } else {
                         out.print("ingrédient inexistant");
->>>>>>> 194a99d8c64b0183d3b83c3910f96cfb4b3aa0c9
                         return;
                     }
                 }
@@ -121,14 +103,8 @@ public class IngredientRestAPI extends DoPatch {
                     dao.save(i);
                     out.print(objectMapper.writeValueAsString(dao.findByName(i.getName())));
                     return;
-<<<<<<< HEAD
-                }
-                else{
-                    out.print("ingredient déjà existant");
-=======
                 } else {
                     out.print("ingrédient déjà existant");
->>>>>>> 194a99d8c64b0183d3b83c3910f96cfb4b3aa0c9
                     return;
                 }
             }
@@ -157,23 +133,13 @@ public class IngredientRestAPI extends DoPatch {
             if (i == null) {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-<<<<<<< HEAD
-            if(i.getName() != null){
-=======
-            if (e.getName() != null) {
->>>>>>> 194a99d8c64b0183d3b83c3910f96cfb4b3aa0c9
+            if (i.getName() != null) {
                 dao.delete(id);
-                out.print("ingredient supprimer : "); 
+                out.print("ingredient supprimer : ");
                 out.print(i.getName());
                 return;
-<<<<<<< HEAD
-            }
-            else{
-                out.print("ingredient inexistant");
-=======
             } else {
                 out.print("Ingrédient inexistant");
->>>>>>> 194a99d8c64b0183d3b83c3910f96cfb4b3aa0c9
                 return;
             }
         } catch (Exception e) {
