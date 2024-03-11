@@ -51,6 +51,7 @@ public class CommandeRestAPI extends HttpServlet {
                     return;
                 }
                 else{
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     out.print("commande inexistant");
                     return;
                 }
@@ -70,6 +71,7 @@ public class CommandeRestAPI extends HttpServlet {
                     return;
                     }
                     else{
+                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                         out.print("commande inexistante");
                     }
                 }
@@ -89,7 +91,6 @@ public class CommandeRestAPI extends HttpServlet {
         DS ds = new DS("/config.postgres.prop");
         try (Connection con = ds.getConnection();){
             CommandeDAODatabase dao = new CommandeDAODatabase(con);
-            // PizzaDAODatabase daoPizza = new PizzaDAODatabase(con);
 
             if (info == null || info.equals("/")) {
                 StringBuilder buffer = new StringBuilder();
@@ -115,6 +116,7 @@ public class CommandeRestAPI extends HttpServlet {
                         return;
                     }
                 } else {
+                    res.sendError(HttpServletResponse.SC_CONFLICT);
                     out.print("pizzas(s) inexistant ou commande déjà existante");
                     return;
                 }

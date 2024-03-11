@@ -48,6 +48,7 @@ public class IngredientRestAPI extends DoPatch {
                     out.print(objectMapper.writeValueAsString(e));
                     return;
                 } else {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
                     out.print("ingrédient inexistant");
                     return;
                 }
@@ -59,6 +60,7 @@ public class IngredientRestAPI extends DoPatch {
                         out.print(objectMapper.writeValueAsString(e.getName()));
                         return;
                     } else {
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("ingrédient inexistant");
                         return;
                     }
@@ -104,6 +106,7 @@ public class IngredientRestAPI extends DoPatch {
                     out.print(objectMapper.writeValueAsString(dao.findByName(i.getName())));
                     return;
                 } else {
+                    res.sendError(HttpServletResponse.SC_CONFLICT);
                     out.print("ingrédient déjà existant");
                     return;
                 }
@@ -139,6 +142,7 @@ public class IngredientRestAPI extends DoPatch {
                 out.print(i.getName());
                 return;
             } else {
+                res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 out.print("Ingrédient inexistant");
                 return;
             }
@@ -189,6 +193,7 @@ public class IngredientRestAPI extends DoPatch {
 
                 out.print(objectMapper.writeValueAsString(dao.findById(id)));
             } else {
+                res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 out.print("ingredient inexistant");
             }
         } catch (Exception e) {

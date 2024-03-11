@@ -51,6 +51,7 @@ public class PizzaRestAPI extends DoPatch {
                 return;
             }
             else{
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("pizza inexistant");
                 return;
             }
@@ -67,6 +68,7 @@ public class PizzaRestAPI extends DoPatch {
                 return;
                 }
                 else{
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     out.print("pizza inexistante");
                 }
             }
@@ -111,6 +113,7 @@ public class PizzaRestAPI extends DoPatch {
                         return;
                     }
                 } else {
+                    res.sendError(HttpServletResponse.SC_CONFLICT);
                     out.print("ingredient(s) inexistant ou pizza déjà existante");
                     return;
                 }
@@ -130,12 +133,14 @@ public class PizzaRestAPI extends DoPatch {
                         return;
                     }
                     else{
+                        res.sendError(HttpServletResponse.SC_CONFLICT);
                         out.print("ingredient déjà existant");
                         return;
                     }
                     
                 }
                 else{
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     out.print("pizza ou ingredient inexistant");
                     return;
                 }
@@ -181,6 +186,7 @@ public class PizzaRestAPI extends DoPatch {
                 }
             }
             if(!delete){
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("ingredient non associé à cette pizza ou pizza inexistante");
                 return;
             }
@@ -193,6 +199,7 @@ public class PizzaRestAPI extends DoPatch {
                 return;
             }
             else{
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("pizza inexistant");
                 return;
             }
@@ -247,6 +254,7 @@ public class PizzaRestAPI extends DoPatch {
             return;
         }
         else{
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
             out.print("pizza inexistante");
             return;
         }
