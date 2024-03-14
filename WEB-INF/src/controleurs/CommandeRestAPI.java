@@ -2,7 +2,11 @@ package controleurs;
 
 import java.io.*;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Date;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,6 +86,18 @@ public class CommandeRestAPI extends HttpServlet {
         }
     }
 
+    private LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
+    return dateToConvert.toInstant()
+      .atZone(ZoneId.systemDefault())
+      .toLocalDate();
+    }
+
+    private Date convertToDateViaInstant(LocalDate dateToConvert) {
+        return java.util.Date.from(dateToConvert.atStartOfDay()
+          .atZone(ZoneId.systemDefault())
+          .toInstant());
+    }
+
     public void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
@@ -103,6 +119,7 @@ public class CommandeRestAPI extends HttpServlet {
                 Commande c = objectMapper.readValue(payload, Commande.class);
                 boolean exist = true;
                 int idx = 0;
+                Date date = c.getDate();
                 while (exist && idx < c.getList().size()) {
                     if (!dao.PizzaExist(c.getList().get(idx))) {
                         exist = false;
@@ -124,7 +141,64 @@ public class CommandeRestAPI extends HttpServlet {
         } catch (Exception e) {
             out.print(e.getMessage());
         }
+    }
 
+    public void doDelete(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        res.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = res.getWriter();
+        String info = req.getPathInfo();
+        DS ds = new DS("/config.postgres.prop");
+        try(Connection con = ds.getConnection();) {
+            CommandeDAODatabase dao = new CommandeDAODatabase(con);
+        String[] splits = info.split("/");
+        if (splits.length > 3) {
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        }
+        int id = Integer.parseInt(splits[1]);
+        Commande c = dao.findById(id);
+        if (c == null) {
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+        if (splits.length == 3) {
+            int idPizza = Integer.parseInt(splits[2]);
+            boolean delete = false;
+            int idx = 0;
+            while (!delete && idx < c.getList().size()) {
+                if (c.getList().get(idx).getId() == idPizza) {
+                    dao.deletePizza(idPizza);
+                    out.print("pizza supprimer : "); 
+                    out.print(c.getList().get(idx).getName());
+                    delete = true;
+                    return;
+                }
+                else{
+                    idx = idx + 1;
+                }
+            }
+            if(!delete){
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("pizza non associé à cette commande ou commande inexistante");
+                return;
+            }
+        }
+        if (splits.length == 2) {
+            if(dao.findById(id).getName() != null){
+                dao.delete(id);
+                out.print("commande supprimer : ");
+                out.print(c.getName());
+                return;
+            }
+            else{
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("commande inexistant");
+                return;
+            }
+        }
+        
+        } catch (Exception e) {
+            out.print(e.getMessage());
+        }
         
     }
 

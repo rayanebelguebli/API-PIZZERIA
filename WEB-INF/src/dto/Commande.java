@@ -3,6 +3,8 @@ package dto;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Commande {
     private int id;
     private String name;
@@ -21,9 +23,13 @@ public class Commande {
     public void setName(String name) {
         this.name = name;
     }
+
+    @JsonFormat(pattern="yyyy-MM-dd")
     public Date getDate() {
         return date;
     }
+    
+    @JsonFormat(pattern="yyyy-MM-dd")
     public void setDate(Date date) {
         this.date = date;
     }

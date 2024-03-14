@@ -3,6 +3,7 @@ package dao;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import dto.Commande;
@@ -101,6 +102,8 @@ public class CommandeDAODatabase {
             ps.setString(2, p.getName());
             java.util.Date utilDate = p.getDate();
             java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+            LocalDate ld = sqlDate.toLocalDate().plusDays(1);
+            sqlDate = java.sql.Date.valueOf(ld);
             ps.setDate(3, sqlDate);
             ps.executeUpdate();
             return true;
@@ -134,6 +137,42 @@ public class CommandeDAODatabase {
             ps.setInt(2, i.getId());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean delete(int id) {
+        try {
+            String query = "DELETE FROM commandes WHERE id=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            String query2 = "DELETE FROM commandescontient WHERE idPizza=?";
+            java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
+            if(this.findById(id).getName() != null){
+                ps.setInt(1, id);
+                ps2.setInt(1, id);
+                ps.executeUpdate();
+                ps2.executeUpdate();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean deletePizza(int id) {
+        try {
+            String query = "DELETE FROM commandescontient WHERE idpizza=?";
+            java.sql.PreparedStatement ps = con.prepareStatement(query);
+            if(this.findById(id) != null){
+                ps.setInt(1, id);
+                ps.executeUpdate();
                 return true;
             }
             return false;
