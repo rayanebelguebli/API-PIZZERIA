@@ -31,7 +31,7 @@ public class CommandeDAODatabase {
 
             if (rs.next()) {
                 c.setId(rs.getInt("id"));
-                c.setName(rs.getString("name"));
+                c.setName(rs.getString("name").toLowerCase());
                 c.setDate((rs.getDate("date")));
             }
 
@@ -68,7 +68,7 @@ public class CommandeDAODatabase {
             while (rs.next()) {
                 Commande c = new Commande();
                 c.setId(rs.getInt("id"));
-                c.setName(rs.getString("name"));
+                c.setName(rs.getString("name").toLowerCase());
                 c.setDate(rs.getDate("date"));
                 try {
                     String query2 = "Select idPizza from commandesContient where idCommande=?;";
@@ -99,7 +99,7 @@ public class CommandeDAODatabase {
             String query = "INSERT INTO commandes (id, name,date) VALUES (?, ?, ?) ;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             ps.setInt(1, p.getId());
-            ps.setString(2, p.getName());
+            ps.setString(2, p.getName().toLowerCase());
             java.util.Date utilDate = p.getDate();
             java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
             LocalDate ld = sqlDate.toLocalDate().plusDays(1);
@@ -186,7 +186,7 @@ public class CommandeDAODatabase {
         try{
             String query = "Select * from commandes where name=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, name);
+            ps.setString(1, name.toLowerCase());
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
                 return true;

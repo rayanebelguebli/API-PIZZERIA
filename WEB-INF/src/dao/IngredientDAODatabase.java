@@ -28,7 +28,7 @@ public class IngredientDAODatabase {
 
             if (rs.next()) {
                 i.setId(rs.getInt("id"));
-                i.setName(rs.getString("name"));
+                i.setName(rs.getString("name").toLowerCase());
                 i.setPrix(rs.getInt("prix"));
             }
 
@@ -50,7 +50,7 @@ public class IngredientDAODatabase {
                 Ingredient i = new Ingredient();
                 i.setPrix(rs.getInt("prix"));
                 i.setId(rs.getInt("id"));
-                i.setName(rs.getString("name"));
+                i.setName(rs.getString("name").toLowerCase());
                 ingredients.add(i);
             }
             return ingredients;
@@ -74,7 +74,7 @@ public class IngredientDAODatabase {
                 }
                 idx = idx + 1;
             }
-            ps.setString(1, i.getName());
+            ps.setString(1, i.getName().toLowerCase());
             ps.setInt(2, i.getPrix());
             ps.executeUpdate();
             return true;
@@ -108,7 +108,7 @@ public class IngredientDAODatabase {
             Ingredient i = new Ingredient();
             if (rs.next()) {
                 i.setId(rs.getInt("id"));
-                i.setName(rs.getString("name"));
+                i.setName(rs.getString("name").toLowerCase());
                 i.setPrix(rs.getInt("prix"));
             }
             return i;

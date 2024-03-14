@@ -28,7 +28,7 @@ public class PizzaDAODatabase {
 
             if (rs.next()) {
                 p.setId(rs.getInt("id"));
-                p.setName(rs.getString("name"));
+                p.setName(rs.getString("name").toLowerCase());
                 p.setpate(rs.getString("pate"));
                 p.setPrixBase(rs.getInt("prixBase"));
             }
@@ -66,7 +66,7 @@ public class PizzaDAODatabase {
             while (rs.next()) {
                 Pizza p = new Pizza();
                 p.setId(rs.getInt("id"));
-                p.setName(rs.getString("name"));
+                p.setName(rs.getString("name").toLowerCase());
                 p.setpate(rs.getString("pate"));
                 p.setPrixBase(rs.getInt("prixBase"));
                 try {
@@ -116,7 +116,7 @@ public class PizzaDAODatabase {
             String query = "INSERT INTO pizzas (id, name,pate,prixBase) VALUES (?, ?, ?, ?) ;";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             ps.setInt(1, p.getId());
-            ps.setString(2, p.getName());
+            ps.setString(2, p.getName().toLowerCase());
             ps.setString(3, p.getpate());
             ps.setInt(4, p.getPrixBase());
             ps.executeUpdate();
@@ -198,7 +198,7 @@ public class PizzaDAODatabase {
         try{
             String query = "Select * from pizzas where name=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, name);
+            ps.setString(1, name.toLowerCase());
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
                 return true;
