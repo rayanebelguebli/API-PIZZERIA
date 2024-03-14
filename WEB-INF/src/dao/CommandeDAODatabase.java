@@ -1,7 +1,6 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -152,7 +151,7 @@ public class CommandeDAODatabase {
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             String query2 = "DELETE FROM commandescontient WHERE idPizza=?";
             java.sql.PreparedStatement ps2 = con.prepareStatement(query2);
-            if(this.findById(id).getName() != null){
+            if (this.findById(id).getName() != null) {
                 ps.setInt(1, id);
                 ps2.setInt(1, id);
                 ps.executeUpdate();
@@ -170,7 +169,7 @@ public class CommandeDAODatabase {
         try {
             String query = "DELETE FROM commandescontient WHERE idpizza=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
-            if(this.findById(id) != null){
+            if (this.findById(id) != null) {
                 ps.setInt(1, id);
                 ps.executeUpdate();
                 return true;
@@ -182,16 +181,15 @@ public class CommandeDAODatabase {
         }
     }
 
-    public boolean findByName(String name){
-        try{
+    public boolean findByName(String name) {
+        try {
             String query = "Select * from commandes where name=?";
             java.sql.PreparedStatement ps = con.prepareStatement(query);
             ps.setString(1, name.toLowerCase());
             ResultSet rs = ps.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 return true;
-            }
-            else{
+            } else {
                 return false;
             }
         } catch (Exception e) {

@@ -2,11 +2,13 @@ package controleurs;
 
 import java.io.*;
 import java.sql.Connection;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dao.AuthentDAO;
 import dao.IngredientDAODatabase;
 import dao.PizzaDAODatabase;
 import ds.DS;
@@ -26,57 +28,55 @@ public class PizzaRestAPI extends DoPatch {
         ObjectMapper objectMapper = new ObjectMapper();
         String info = req.getPathInfo();
         DS ds = new DS("/config.postgres.prop");
-        try (Connection con = ds.getConnection();){
+        try (Connection con = ds.getConnection();) {
             PizzaDAODatabase dao = new PizzaDAODatabase(con);
-        if (info == null || info.equals("/")) {
-            Collection<Pizza> l = dao.findAll();
-            String jsonstring = objectMapper.writeValueAsString(l);
-            out.print(jsonstring);
-            return;
-        }
-        String[] splits = info.split("/");
-        if (splits.length > 3) {
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-        int id = Integer.parseInt(splits[1]);
-        Pizza p = dao.findById(id);
-        if (p == null) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        if(splits.length  == 2){
-            if(p.getName() != null){
-                out.print(objectMapper.writeValueAsString(p));
+            if (info == null || info.equals("/")) {
+                Collection<Pizza> l = dao.findAll();
+                String jsonstring = objectMapper.writeValueAsString(l);
+                out.print(jsonstring);
                 return;
             }
-            else{
+            String[] splits = info.split("/");
+            if (splits.length > 3) {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                out.print("pizza inexistant");
                 return;
             }
-
-    }
-        if(splits.length  == 3){
-            if(splits[2].equals("prixfinal")){
-                if(dao.findById(p.getId()).getName() != null){
-                    int prixFinal = p.getPrixBase();
-                for(Ingredient i : p.getIngredients()){
-                    prixFinal = prixFinal + i.getPrix();
-                }
-                out.print(objectMapper.writeValueAsString(p.getName() + " : " + prixFinal + " euros"));
+            int id = Integer.parseInt(splits[1]);
+            Pizza p = dao.findById(id);
+            if (p == null) {
+                res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
-                }
-                else{
+            }
+            if (splits.length == 2) {
+                if (p.getName() != null) {
+                    out.print(objectMapper.writeValueAsString(p));
+                    return;
+                } else {
                     res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print("pizza inexistante");
+                    out.print("pizza inexistant");
+                    return;
+                }
+
+            }
+            if (splits.length == 3) {
+                if (splits[2].equals("prixfinal")) {
+                    if (dao.findById(p.getId()).getName() != null) {
+                        int prixFinal = p.getPrixBase();
+                        for (Ingredient i : p.getIngredients()) {
+                            prixFinal = prixFinal + i.getPrix();
+                        }
+                        out.print(objectMapper.writeValueAsString(p.getName() + " : " + prixFinal + " euros"));
+                        return;
+                    } else {
+                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        out.print("pizza inexistante");
+                    }
                 }
             }
-        }
         } catch (Exception e) {
             out.print(e.getMessage());
         }
-        
+
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
@@ -89,126 +89,149 @@ public class PizzaRestAPI extends DoPatch {
         try (Connection con = ds.getConnection();) {
             PizzaDAODatabase dao = new PizzaDAODatabase(con);
             IngredientDAODatabase daoIngredient = new IngredientDAODatabase(con);
-            if (info == null || info.equals("/")) {
-                StringBuilder buffer = new StringBuilder();
-                BufferedReader reader = req.getReader();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                }
-                String payload = buffer.toString();
-                Pizza p = objectMapper.readValue(payload, Pizza.class);
-                boolean exist = true;
-                int idx = 0;
-                while (exist && idx < p.getIngredients().size()) {
-                    if (!dao.ingredientExist(p.getIngredients().get(idx))) {
-                        exist = false;
-                    } else {
-                        idx = idx + 1;
-                    }
-                }
-                if (exist && dao.findById(p.getId()).getName() == null && !dao.findByName(p.getName())) {
-                    if (dao.save(p) == true && dao.saveIngredients(p) == true) {
-                        out.print(objectMapper.writeValueAsString(dao.findById(p.getId())));
-                        return;
-                    }
-                } else {
-                    res.sendError(HttpServletResponse.SC_CONFLICT);
-                    out.print("ingredient(s) inexistant ou pizza déjà existante");
-                    return;
-                }
+            String authorization = req.getHeader("Authorization");
+            if (authorization == null || !authorization.startsWith("Basic")) {
+                out.print("pas autorisé");
+                return;
             }
-            String[] splits = info.split("/");
-            if(splits.length == 3){
-                int idPizza = Integer.parseInt(splits[1]);
-                Pizza p = dao.findById(idPizza);
-                Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
-                if(i.getName() != null && p.getName() != null){
-                    p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
-                    for(Ingredient ingredientActuelPizza : p.getIngredients()){
-                        System.out.println(dao.deleteIngredient(ingredientActuelPizza.getId()));
+
+            String token = authorization.substring("Basic".length()).trim();
+            byte[] base64 = Base64.getDecoder().decode(token);
+            String[] lm = (new String(base64)).split(":");
+            String login = lm[0];
+            String pwd = lm[1];
+            AuthentDAO daoAuthent = new AuthentDAO(con);
+            if (daoAuthent.verifToken(login, pwd)) {
+                if (info == null || info.equals("/")) {
+                    StringBuilder buffer = new StringBuilder();
+                    BufferedReader reader = req.getReader();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line);
                     }
-                    if(dao.saveIngredients(p)){
-                        out.print(objectMapper.writeValueAsString(p));
-                        return;
+                    String payload = buffer.toString();
+                    Pizza p = objectMapper.readValue(payload, Pizza.class);
+                    boolean exist = true;
+                    int idx = 0;
+                    while (exist && idx < p.getIngredients().size()) {
+                        if (!dao.ingredientExist(p.getIngredients().get(idx))) {
+                            exist = false;
+                        } else {
+                            idx = idx + 1;
+                        }
                     }
-                    else{
+                    if (exist && dao.findById(p.getId()).getName() == null && !dao.findByName(p.getName())) {
+                        if (dao.save(p) == true && dao.saveIngredients(p) == true) {
+                            out.print(objectMapper.writeValueAsString(dao.findById(p.getId())));
+                            return;
+                        }
+                    } else {
                         res.sendError(HttpServletResponse.SC_CONFLICT);
-                        out.print("ingredient déjà existant");
+                        out.print("ingredient(s) inexistant ou pizza déjà existante");
                         return;
                     }
-                    
                 }
-                else{
-                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print("pizza ou ingredient inexistant");
-                    return;
+                String[] splits = info.split("/");
+                if (splits.length == 3) {
+                    int idPizza = Integer.parseInt(splits[1]);
+                    Pizza p = dao.findById(idPizza);
+                    Ingredient i = daoIngredient.findById(Integer.parseInt(splits[2]));
+                    if (i.getName() != null && p.getName() != null) {
+                        p.getIngredients().add(daoIngredient.findById(Integer.parseInt(splits[2])));
+                        for (Ingredient ingredientActuelPizza : p.getIngredients()) {
+                            System.out.println(dao.deleteIngredient(ingredientActuelPizza.getId()));
+                        }
+                        if (dao.saveIngredients(p)) {
+                            out.print(objectMapper.writeValueAsString(p));
+                            return;
+                        } else {
+                            res.sendError(HttpServletResponse.SC_CONFLICT);
+                            out.print("ingredient déjà existant");
+                            return;
+                        }
+
+                    } else {
+                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        out.print("pizza ou ingredient inexistant");
+                        return;
+                    }
                 }
             }
         } catch (Exception e) {
             out.print(e.getMessage());
         }
-        
+
     }
 
     public void doDelete(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
-        ObjectMapper objectMapper = new ObjectMapper();
         String info = req.getPathInfo();
         DS ds = new DS("/config.postgres.prop");
-        try(Connection con = ds.getConnection();) {
+        try (Connection con = ds.getConnection();) {
             PizzaDAODatabase dao = new PizzaDAODatabase(con);
-        String[] splits = info.split("/");
-        if (splits.length > 3) {
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        }
-        int id = Integer.parseInt(splits[1]);
-        Pizza p = dao.findById(id);
-        if (p == null) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-        if (splits.length == 3) {
-            int idIngredient = Integer.parseInt(splits[2]);
-            boolean delete = false;
-            int idx = 0;
-            while (!delete && idx < p.getIngredients().size()) {
-                if (p.getIngredients().get(idx).getId() == idIngredient) {
-                    dao.deleteIngredient(idIngredient);
-                    out.print("ingredient supprimer : "); 
-                    out.print(p.getIngredients().get(idx).getName());
-                    delete = true;
-                    return;
+            String authorization = req.getHeader("Authorization");
+            if (authorization == null || !authorization.startsWith("Basic")) {
+                out.print("pas autorisé");
+                return;
+            }
+
+            String token = authorization.substring("Basic".length()).trim();
+            byte[] base64 = Base64.getDecoder().decode(token);
+            String[] lm = (new String(base64)).split(":");
+            String login = lm[0];
+            String pwd = lm[1];
+            AuthentDAO daoAuthent = new AuthentDAO(con);
+            if (daoAuthent.verifToken(login, pwd)) {
+                String[] splits = info.split("/");
+                if (splits.length > 3) {
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 }
-                else{
-                    idx = idx + 1;
+                int id = Integer.parseInt(splits[1]);
+                Pizza p = dao.findById(id);
+                if (p == null) {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                }
+                if (splits.length == 3) {
+                    int idIngredient = Integer.parseInt(splits[2]);
+                    boolean delete = false;
+                    int idx = 0;
+                    while (!delete && idx < p.getIngredients().size()) {
+                        if (p.getIngredients().get(idx).getId() == idIngredient) {
+                            dao.deleteIngredient(idIngredient);
+                            out.print("ingredient supprimer : ");
+                            out.print(p.getIngredients().get(idx).getName());
+                            delete = true;
+                            return;
+                        } else {
+                            idx = idx + 1;
+                        }
+                    }
+                    if (!delete) {
+                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        out.print("ingredient non associé à cette pizza ou pizza inexistante");
+                        return;
+                    }
+                }
+                if (splits.length == 2) {
+                    if (dao.findById(id).getName() != null) {
+                        dao.delete(id);
+                        out.print("pizza supprimer : ");
+                        out.print(p.getName());
+                        return;
+                    } else {
+                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        out.print("pizza inexistant");
+                        return;
+                    }
                 }
             }
-            if(!delete){
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                out.print("ingredient non associé à cette pizza ou pizza inexistante");
-                return;
-            }
-        }
-        if (splits.length == 2) {
-            if(dao.findById(id).getName() != null){
-                dao.delete(id);
-                out.print("pizza supprimer : ");
-                out.print(p.getName());
-                return;
-            }
-            else{
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                out.print("pizza inexistant");
-                return;
-            }
-        }
-        
+
         } catch (Exception e) {
             out.print(e.getMessage());
         }
-        
+
     }
 
     @Override
@@ -220,48 +243,61 @@ public class PizzaRestAPI extends DoPatch {
         DS ds = new DS("/config.postgres.prop");
         try (Connection con = ds.getConnection()) {
             PizzaDAODatabase dao = new PizzaDAODatabase(con);
-        if (info == null || info.equals("/")) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
+            String authorization = req.getHeader("Authorization");
+            if (authorization == null || !authorization.startsWith("Basic")) {
+                out.print("pas autorisé");
+                return;
+            }
 
-        String[] splits = info.split("/");
-        if (splits.length != 2) {
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-        int id = Integer.parseInt(splits[1]);
+            String token = authorization.substring("Basic".length()).trim();
+            byte[] base64 = Base64.getDecoder().decode(token);
+            String[] lm = (new String(base64)).split(":");
+            String login = lm[0];
+            String pwd = lm[1];
+            AuthentDAO daoAuthent = new AuthentDAO(con);
+            if (daoAuthent.verifToken(login, pwd)) {
+                if (info == null || info.equals("/")) {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
 
-        StringBuilder buffer = new StringBuilder();
-        BufferedReader reader = req.getReader();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            buffer.append(line);
-        }
-        if(dao.findById(id).getName() != null){
-            System.out.println(dao.findById(id));
-            String payload = buffer.toString();
+                String[] splits = info.split("/");
+                if (splits.length != 2) {
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+                int id = Integer.parseInt(splits[1]);
 
-            Map<String, String> jsonData = objectMapper.readValue(payload, Map.class);
+                StringBuilder buffer = new StringBuilder();
+                BufferedReader reader = req.getReader();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+                if (dao.findById(id).getName() != null) {
+                    System.out.println(dao.findById(id));
+                    String payload = buffer.toString();
 
-            String prixString = jsonData.get("prix");
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> jsonData = objectMapper.readValue(payload, Map.class);
 
-            int prix = Integer.parseInt(prixString);
+                    String prixString = jsonData.get("prix");
 
-            System.out.println(dao.modifPizza(prix, id));
+                    int prix = Integer.parseInt(prixString);
 
-            out.print(objectMapper.writeValueAsString(dao.findById(id)));
-            return;
-        }
-        else{
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("pizza inexistante");
-            return;
-        }
+                    System.out.println(dao.modifPizza(prix, id));
+
+                    out.print(objectMapper.writeValueAsString(dao.findById(id)));
+                    return;
+                } else {
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    out.print("pizza inexistante");
+                    return;
+                }
+            }
         } catch (Exception e) {
             out.print(e.getMessage());
         }
 
-        
     }
 }

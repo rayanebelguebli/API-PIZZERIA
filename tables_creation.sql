@@ -37,3 +37,9 @@ Create table commandesContient(
    references pizzas(id) on delete cascade,
    constraint pk_commandesContient primary key (idCommande,idPizza)
 );
+
+
+Create table users(
+    login text,
+    mdp text
+);

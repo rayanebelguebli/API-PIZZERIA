@@ -2,13 +2,15 @@ package controleurs;
 
 import java.io.*;
 import java.sql.Connection;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dao.AuthentDAO;
 import dao.IngredientDAODatabase;
-import dao.PizzaDAODatabase;
+
 import ds.DS;
 import dto.Ingredient;
 import jakarta.servlet.*;
@@ -82,33 +84,47 @@ public class IngredientRestAPI extends DoPatch {
         DS ds = new DS("/config.postgres.prop");
         try (Connection con = ds.getConnection();) {
             IngredientDAODatabase dao = new IngredientDAODatabase(con);
+            String authorization = req.getHeader("Authorization");
+            if (authorization == null || !authorization.startsWith("Basic")) {
+                out.print("pas autorisé");
+                return;
+            }
 
-            if (info == null || info.equals("/")) {
-                StringBuilder buffer = new StringBuilder();
-                BufferedReader reader = req.getReader();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                }
-                String payload = buffer.toString();
-                Ingredient i = objectMapper.readValue(payload, Ingredient.class);
-                boolean exist = false;
-                int idx = 0;
-                while (!exist && idx < dao.findAll().size()) {
-                    if (i.getName().equals(dao.findAll().get(idx).getName())) {
-                        exist = true;
-                    } else {
-                        idx = idx + 1;
+            String token = authorization.substring("Basic".length()).trim();
+            byte[] base64 = Base64.getDecoder().decode(token);
+            String[] lm = (new String(base64)).split(":");
+            String login = lm[0];
+            String pwd = lm[1];
+            AuthentDAO daoAuthent = new AuthentDAO(con);
+            if (daoAuthent.verifToken(login, pwd)) {
+
+                if (info == null || info.equals("/")) {
+                    StringBuilder buffer = new StringBuilder();
+                    BufferedReader reader = req.getReader();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line);
                     }
-                }
-                if (!exist) {
-                    dao.save(i);
-                    out.print(objectMapper.writeValueAsString(dao.findByName(i.getName())));
-                    return;
-                } else {
-                    res.sendError(HttpServletResponse.SC_CONFLICT);
-                    out.print("ingrédient déjà existant");
-                    return;
+                    String payload = buffer.toString();
+                    Ingredient i = objectMapper.readValue(payload, Ingredient.class);
+                    boolean exist = false;
+                    int idx = 0;
+                    while (!exist && idx < dao.findAll().size()) {
+                        if (i.getName().equals(dao.findAll().get(idx).getName())) {
+                            exist = true;
+                        } else {
+                            idx = idx + 1;
+                        }
+                    }
+                    if (!exist) {
+                        dao.save(i);
+                        out.print(objectMapper.writeValueAsString(dao.findByName(i.getName())));
+                        return;
+                    } else {
+                        res.sendError(HttpServletResponse.SC_CONFLICT);
+                        out.print("ingrédient déjà existant");
+                        return;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -121,30 +137,44 @@ public class IngredientRestAPI extends DoPatch {
             throws ServletException, IOException {
         res.setContentType("application/json;charset=UTF-8");
         PrintWriter out = res.getWriter();
-        ObjectMapper objectMapper = new ObjectMapper();
+
         String info = req.getPathInfo();
         DS ds = new DS("/config.postgres.prop");
         try (Connection con = ds.getConnection()) {
             IngredientDAODatabase dao = new IngredientDAODatabase(con);
+            String authorization = req.getHeader("Authorization");
+            if (authorization == null || !authorization.startsWith("Basic")) {
+                out.print("pas autorisé");
+                return;
+            }
 
-            String[] splits = info.split("/");
-            if (splits.length != 2) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            }
-            int id = Integer.parseInt(splits[1]);
-            Ingredient i = dao.findById(id);
-            if (i == null) {
-                res.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
-            if (i.getName() != null) {
-                dao.delete(id);
-                out.print("ingredient supprimer : ");
-                out.print(i.getName());
-                return;
-            } else {
-                res.sendError(HttpServletResponse.SC_NOT_FOUND);
-                out.print("Ingrédient inexistant");
-                return;
+            String token = authorization.substring("Basic".length()).trim();
+            byte[] base64 = Base64.getDecoder().decode(token);
+            String[] lm = (new String(base64)).split(":");
+            String login = lm[0];
+            String pwd = lm[1];
+            AuthentDAO daoAuthent = new AuthentDAO(con);
+            if (daoAuthent.verifToken(login, pwd)) {
+
+                String[] splits = info.split("/");
+                if (splits.length != 2) {
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                int id = Integer.parseInt(splits[1]);
+                Ingredient i = dao.findById(id);
+                if (i == null) {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                }
+                if (i.getName() != null) {
+                    dao.delete(id);
+                    out.print("ingredient supprimer : ");
+                    out.print(i.getName());
+                    return;
+                } else {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    out.print("Ingrédient inexistant");
+                    return;
+                }
             }
         } catch (Exception e) {
             out.print(e.getMessage());
@@ -160,41 +190,56 @@ public class IngredientRestAPI extends DoPatch {
         DS ds = new DS("/config.postgres.prop");
         try (Connection con = ds.getConnection()) {
             IngredientDAODatabase dao = new IngredientDAODatabase(con);
-            if (info == null || info.equals("/")) {
-                res.sendError(HttpServletResponse.SC_NOT_FOUND);
+            String authorization = req.getHeader("Authorization");
+            if (authorization == null || !authorization.startsWith("Basic")) {
+                out.print("pas autorisé");
                 return;
             }
 
-            String[] splits = info.split("/");
-            if (splits.length != 2) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+            String token = authorization.substring("Basic".length()).trim();
+            byte[] base64 = Base64.getDecoder().decode(token);
+            String[] lm = (new String(base64)).split(":");
+            String login = lm[0];
+            String pwd = lm[1];
+            AuthentDAO daoAuthent = new AuthentDAO(con);
+            if (daoAuthent.verifToken(login, pwd)) {
+                if (info == null || info.equals("/")) {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
 
-            int id = Integer.parseInt(splits[1]);
+                String[] splits = info.split("/");
+                if (splits.length != 2) {
+                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
 
-            StringBuilder buffer = new StringBuilder();
-            BufferedReader reader = req.getReader();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
-            if (dao.findById(id).getName() != null) {
-                System.out.println(dao.findById(id));
-                String payload = buffer.toString();
+                int id = Integer.parseInt(splits[1]);
 
-                Map<String, String> jsonData = objectMapper.readValue(payload, Map.class);
+                StringBuilder buffer = new StringBuilder();
+                BufferedReader reader = req.getReader();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+                if (dao.findById(id).getName() != null) {
+                    System.out.println(dao.findById(id));
+                    String payload = buffer.toString();
 
-                String prixString = jsonData.get("prix");
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> jsonData = objectMapper.readValue(payload, Map.class);
 
-                int prix = Integer.parseInt(prixString);
+                    String prixString = jsonData.get("prix");
 
-                System.out.println(dao.modifIngredient(prix, id));
+                    int prix = Integer.parseInt(prixString);
 
-                out.print(objectMapper.writeValueAsString(dao.findById(id)));
-            } else {
-                res.sendError(HttpServletResponse.SC_NOT_FOUND);
-                out.print("ingredient inexistant");
+                    System.out.println(dao.modifIngredient(prix, id));
+
+                    out.print(objectMapper.writeValueAsString(dao.findById(id)));
+                } else {
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    out.print("ingredient inexistant");
+                }
             }
         } catch (Exception e) {
             out.print(e.getMessage());
