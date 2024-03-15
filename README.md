@@ -11,7 +11,7 @@
 |/ingredients/{id}/name|GET|<-text/plain| |Le nom de l'ingrédient ayant cette {id} ou 404|
 |/ingredients|POST|<-/->application/json->application/x-www-form-urlencoded|Ingrédient (I2)|Le nouvel ingrédients (I1) ou 409 si l'ingrédient existe déjà (même nom)|
 |/ingredients/{id}|DELETE|<-text/plain| |"ingredient supprimer : {nom de l'ingrédient correspondant à cette id}" ou 404|
-|/ingredients/{id}|PATCH|<-application/json|Ingrédient (I2)|L'ingrédient ayant cette {id} (I1) avec le nouveau prix ou 404|
+|/ingredients/{id}|PATCH|<-application/json|Ingrédient (I3)|L'ingrédient ayant cette {id} (I1) avec le nouveau prix ou 404|
 
 ## Corps des requêtes
 
@@ -34,8 +34,9 @@
 ### I3
 
 ```json 
-{"name":"poivron", "prix":"5"}
-```
+{
+  "prix":"443"
+}```
 
 ## Exemples
 
