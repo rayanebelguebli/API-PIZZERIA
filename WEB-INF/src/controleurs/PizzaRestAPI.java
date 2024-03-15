@@ -52,7 +52,7 @@ public class PizzaRestAPI extends DoPatch {
                     out.print(objectMapper.writeValueAsString(p));
                     return;
                 } else {
-                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
                     out.print("pizza inexistant");
                     return;
                 }
@@ -68,7 +68,7 @@ public class PizzaRestAPI extends DoPatch {
                         out.print(objectMapper.writeValueAsString(p.getName() + " : " + prixFinal + " euros"));
                         return;
                     } else {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("pizza inexistante");
                     }
                 }
@@ -151,7 +151,7 @@ public class PizzaRestAPI extends DoPatch {
                         }
 
                     } else {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("pizza ou ingredient inexistant");
                         return;
                     }
@@ -209,7 +209,7 @@ public class PizzaRestAPI extends DoPatch {
                         }
                     }
                     if (!delete) {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("ingredient non associé à cette pizza ou pizza inexistante");
                         return;
                     }
@@ -221,7 +221,7 @@ public class PizzaRestAPI extends DoPatch {
                         out.print(p.getName());
                         return;
                     } else {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("pizza inexistant");
                         return;
                     }
@@ -290,7 +290,7 @@ public class PizzaRestAPI extends DoPatch {
                     out.print(objectMapper.writeValueAsString(dao.findById(id)));
                     return;
                 } else {
-                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
                     out.print("pizza inexistante");
                     return;
                 }

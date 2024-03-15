@@ -74,7 +74,7 @@ public class CommandeRestAPI extends HttpServlet {
                         out.print(objectMapper.writeValueAsString(c.getName() + " : " + prixFinal + " euros"));
                         return;
                     } else {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("commande inexistante");
                     }
                 }
@@ -119,7 +119,6 @@ public class CommandeRestAPI extends HttpServlet {
                     Commande c = objectMapper.readValue(payload, Commande.class);
                     boolean exist = true;
                     int idx = 0;
-                    Date date = c.getDate();
                     while (exist && idx < c.getList().size()) {
                         if (!dao.PizzaExist(c.getList().get(idx))) {
                             exist = false;
@@ -167,7 +166,7 @@ public class CommandeRestAPI extends HttpServlet {
             if (daoAuthent.verifToken(login, pwd)) {
                 String[] splits = info.split("/");
                 if (splits.length > 3) {
-                    res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
                 int id = Integer.parseInt(splits[1]);
                 Commande c = dao.findById(id);
@@ -190,7 +189,7 @@ public class CommandeRestAPI extends HttpServlet {
                         }
                     }
                     if (!delete) {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("pizza non associé à cette commande ou commande inexistante");
                         return;
                     }
@@ -202,7 +201,7 @@ public class CommandeRestAPI extends HttpServlet {
                         out.print(c.getName());
                         return;
                     } else {
-                        res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND);
                         out.print("commande inexistant");
                         return;
                     }
